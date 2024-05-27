@@ -62,7 +62,7 @@ ggplot2::ggplot(berlin_sf) +
 grid_sample <- sf::st_sample(
     sf::st_as_sfc(berlin_sf),
     # the size is really large to make a fine grid - you can change this
-    size = 10000, type = "regular"
+    size = 100000, type = "regular"
 ) %>%
     sf::st_as_sf()
 # this is important to make sure our georefs are the same
@@ -142,6 +142,6 @@ ggplot() +
     geom_sf(data = krig, aes(fill = var1.pred), shape = 21, size = 3) +
     geom_sf(data = pharos_sf, aes(colour = detection_outcome), size = 3) + # foxes
     scale_fill_viridis_c("probability", na.value = "white") +
-    scale_colour_manual("test outcome", values = c("#E6C8FD", "#FFCFE5")) +
+    scale_colour_manual("test outcome", values = c("#8a56b8", "#d5363d")) +
     theme_void() +
     coord_sf()
