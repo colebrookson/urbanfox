@@ -62,7 +62,7 @@ ggplot2::ggplot(berlin_sf) +
 grid_sample <- sf::st_sample(
     sf::st_as_sfc(berlin_sf),
     # the size is really large to make a fine grid - you can change this
-    size = 1000, type = "regular"
+    size = 10000, type = "regular"
 ) %>%
     sf::st_as_sf()
 # this is important to make sure our georefs are the same
@@ -94,7 +94,10 @@ ggplot() +
     coord_sf()
 
 # for mapping purposes, it would be nice to have a single polygon of berlin
-# that doesn't include the
+# that doesn't include the postal codes but is just one big thing
+berlin_poly <- sf::st_union(berlin_sf)
+ggplot() +
+    geom_sf(data = berlin_poly) # this is what we want
 
 # NOTE
 #' now we want to be able to put the various data we have into a format that
@@ -129,20 +132,16 @@ krig <- gstat::krige(
     locations = pharos_sf,
     newdata = grid_sample,
     model = fit_varg,
-    nmax = 10
+    nmax = 5
 )
 plot(krig["var1.pred"])
 
 ggplot() +
-    geom_sf(data = berlin_sf, alpha = 0.3) +
+    geom_sf(data = berlin_poly, alpha = 0.3) +
     # geom_sf(data = grid_sample, colour = "red", size = 2) + # sampled points
-    # geom_sf(data = pharos_sf, colour = "purple", size = 3) + # foxes
     geom_sf(data = krig, aes(fill = var1.pred), shape = 21, size = 3) +
-    # scale_fill_continuous(palette(viridis::magma(n=100))) +
+    geom_sf(data = pharos_sf, aes(colour = detection_outcome), size = 3) + # foxes
+    scale_fill_viridis_c("probability", na.value = "white") +
+    scale_colour_manual("test outcome", values = c("#E6C8FD", "#FFCFE5")) +
     theme_void() +
     coord_sf()
-
-
-# quick check to look at the negs and pos
-pharos_sf$negs <- pharos_sf$detection_outcome > 0
-plot(pharos_sf["negs"], pch = 18)
