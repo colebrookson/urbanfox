@@ -1,18 +1,24 @@
+#' Author: Cole Brookson
+#' Date: 2024-05-27
+#' Description: Initial file demonstrating the general process of grid
+#' generation and krigging onto it
+
 library(sf)
 library(dplyr)
 library(stringr)
 library(ggplot2)
 library(gstat)
+library(here)
 
 # REMEMBER TO CHANGE THE PATH FOR YOUR CASE
-germany_sf <- sf::st_read("~/Documents/berlin-map/plz-5stellig.shp") %>%
+germany_sf <- sf::st_read(here::here("./data/plz-5stellig.shp")) %>%
     st_as_sf()
-germany_code_matches <- readr::read_csv(
-    "~/Documents/berlin-map/zuordnung_plz_ort.csv"
-)
-pharos_data <- readr::read_csv(
-    "~/Documents/berlin-map/pharos_data.csv"
-)
+germany_code_matches <- readr::read_csv(here::here(
+    "./data/zuordnung_plz_ort.csv"
+))
+pharos_data <- readr::read_csv(here::here(
+    "./data/pharos_data.csv"
+))
 
 # look at the column names of the sf document and re-name into easy
 # recognizable english
@@ -86,6 +92,9 @@ ggplot() +
     geom_sf(data = pharos_sf, colour = "purple", size = 3) + # foxes!
     theme_void() +
     coord_sf()
+
+# for mapping purposes, it would be nice to have a single polygon of berlin
+# that doesn't include the
 
 # NOTE
 #' now we want to be able to put the various data we have into a format that
