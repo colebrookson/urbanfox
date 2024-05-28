@@ -6,18 +6,18 @@
 library(sf)
 library(dplyr)
 library(stringr)
-library(ggplot2)
+library(ggplot2::ggplot2)
 library(gstat)
 library(here)
 
 # REMEMBER TO CHANGE THE PATH FOR YOUR CASE
-germany_sf <- sf::st_read(here::here("./data/plz-5stellig.shp")) %>%
+germany_sf <- sf::st_read(here::here("./data/raw/geo-data/")) %>%
     st_as_sf()
 germany_code_matches <- readr::read_csv(here::here(
-    "./data/zuordnung_plz_ort.csv"
+    "./data/raw/zuordnung_plz_ort.csv"
 ))
 pharos_data <- readr::read_csv(here::here(
-    "./data/pharos_data.csv"
+    "./data/raw/pharos_data.csv"
 ))
 
 # look at the column names of the sf document and re-name into easy
@@ -52,7 +52,7 @@ berlin_codes <- germany_code_matches[which(
 berlin_sf <- germany_sf[which(germany_sf$zip_code %in% berlin_codes$zip_code), ]
 
 # plot with a population fill just for fun
-ggplot2::ggplot(berlin_sf) +
+ggplot2::ggplot2::ggplot2::ggplot(berlin_sf) +
     geom_sf() +
     theme_void()
 
@@ -62,14 +62,14 @@ ggplot2::ggplot(berlin_sf) +
 grid_sample <- sf::st_sample(
     sf::st_as_sfc(berlin_sf),
     # the size is really large to make a fine grid - you can change this
-    size = 10000, type = "regular"
+    size = 1000, type = "regular"
 ) %>%
     sf::st_as_sf()
 # this is important to make sure our georefs are the same
 sf::st_crs(grid_sample) <- 4326
 
 # plot these two to show how it looks
-ggplot() +
+ggplot2::ggplot() +
     geom_sf(data = berlin_sf, fill = "grey30") +
     geom_sf(data = grid_sample, colour = "red", size = 4) +
     theme_void() +
@@ -86,7 +86,7 @@ pharos_sf <- sf::st_as_sf(pharos_data, coords = c("longitude", "latitude"))
 sf::st_crs(pharos_sf) <- 4326
 
 # make sure we can plot them all on the same geo-location
-ggplot() +
+ggplot2::ggplot() +
     geom_sf(data = berlin_sf, aes(fill = population), alpha = 0.3) +
     geom_sf(data = grid_sample, colour = "red", size = 2) + # sampled points
     geom_sf(data = pharos_sf, colour = "purple", size = 3) + # foxes!
@@ -96,8 +96,9 @@ ggplot() +
 # for mapping purposes, it would be nice to have a single polygon of berlin
 # that doesn't include the postal codes but is just one big thing
 berlin_poly <- sf::st_union(berlin_sf)
-ggplot() +
-    geom_sf(data = berlin_poly) # this is what we want
+ggplot2::ggplot() +
+    geom_sf(data = berlin_poly) +# this is what we want
+  theme_void()
 
 # NOTE
 #' now we want to be able to put the various data we have into a format that
@@ -114,6 +115,7 @@ pharos_sf$detection_outcome[which(
 pharos_sf$detection_outcome <- as.logical(pharos_sf$detection_outcome)
 sf::st_crs(pharos_sf) <- 4326
 sf::st_crs(pharos_sf)
+
 # variograms
 varg <- gstat::variogram(detection_outcome ~ 1, data = pharos_sf)
 plot(varg)
@@ -134,9 +136,9 @@ krig <- gstat::krige(
     model = fit_varg,
     nmax = 5
 )
-# plot(krig["var1.pred"])
+plot(krig["var1.pred"])
 
-ggplot() +
+krig_and_foxes <- ggplot2::ggplot() +
     geom_sf(data = berlin_poly, alpha = 0.3) +
     # geom_sf(data = grid_sample, colour = "red", size = 2) + # sampled points
     geom_sf(data = krig, aes(fill = var1.pred), shape = 21, size = 3) +
@@ -145,3 +147,10 @@ ggplot() +
     scale_colour_manual("test outcome", values = c("#8a56b8", "#d5363d")) +
     theme_void() +
     coord_sf()
+ggplot2::ggsave(
+  filename = here::here("./figs/krigging-with-foxes-outcomes.png"),
+  plot = krig_and_foxes,
+  height = 6, 
+  width = 8,
+  bg = "white" # change if you want transparent background :) 
+)
