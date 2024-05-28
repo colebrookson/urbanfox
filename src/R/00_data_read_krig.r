@@ -62,7 +62,7 @@ ggplot2::ggplot(berlin_sf) +
 grid_sample <- sf::st_sample(
     sf::st_as_sfc(berlin_sf),
     # the size is really large to make a fine grid - you can change this
-    size = 100000, type = "regular"
+    size = 10000, type = "regular"
 ) %>%
     sf::st_as_sf()
 # this is important to make sure our georefs are the same
@@ -134,7 +134,7 @@ krig <- gstat::krige(
     model = fit_varg,
     nmax = 5
 )
-plot(krig["var1.pred"])
+# plot(krig["var1.pred"])
 
 ggplot() +
     geom_sf(data = berlin_poly, alpha = 0.3) +
