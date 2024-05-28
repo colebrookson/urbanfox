@@ -6,7 +6,7 @@ The original (and up-to-date) data for this project can be found through the [Ph
 
 ------------------
 
-Please feel free to use and borrow from this code base according to the licence below. 
+Please feel free to use and borrow from this code base according to the licence below!
 
 Shield: [![CC BY 4.0][cc-by-shield]][cc-by]
 
