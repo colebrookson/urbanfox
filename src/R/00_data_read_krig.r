@@ -123,9 +123,12 @@ vgm <- gstat::vgm(
     psill = 0.20, # semivariance at the range
     range = 1, # distance of the plateau
     nugget = 0.01, # intercept (sorta)
-    model = "Exp" # spherical model
+    model = "Exp" # exponential model
 )
-plot(varg, vgm)
+png(filename = here::here("./figs/varg-vgm-020-1-001-Exp.png"))
+plot(varg)
+dev.off()
+
 fit_varg <- gstat::fit.variogram(varg, vgm)
 
 # now the kriging part
