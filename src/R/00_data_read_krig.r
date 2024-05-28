@@ -125,9 +125,11 @@ vgm <- gstat::vgm(
     nugget = 0.01, # intercept (sorta)
     model = "Exp" # exponential model
 )
-png(filename = here::here("./figs/varg-vgm-020-1-001-Exp.png"))
-plot(varg)
-dev.off()
+# save the plot of a particular parameter combination
+png(filename = here::here("./figs/varg-vgm-020-1-001-Exp.png")) # opens the png
+plot(varg, vgm) # the thing you're actually saving
+dev.off() # turns off the "opener" so you can do other things - you need one of 
+# these every time you "open" with png() 
 
 fit_varg <- gstat::fit.variogram(varg, vgm)
 
