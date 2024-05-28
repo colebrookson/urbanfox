@@ -152,5 +152,5 @@ ggplot2::ggsave(
   plot = krig_and_foxes,
   height = 6, 
   width = 8,
-  bg = "white" # change if you want transparent background :) 
+  bg = "white" # change if you want transparent background  
 )
