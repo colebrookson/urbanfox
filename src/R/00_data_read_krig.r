@@ -3,12 +3,15 @@
 #' Description: Initial file demonstrating the general process of grid
 #' generation and krigging onto it
 
+# load packages ===========
 library(sf)
 library(dplyr)
 library(stringr)
 library(ggplot2)
 library(gstat)
 library(here)
+
+# read in data ===========
 
 # REMEMBER TO CHANGE THE PATH FOR YOUR CASE
 germany_sf <- sf::st_read(here::here("./data/raw/geo-data/")) %>%
@@ -20,6 +23,9 @@ pharos_data <- readr::read_csv(here::here(
     "./data/raw/pharos_data.csv"
 ))
 
+# clean up data =====
+
+## deal with german words =====
 # look at the column names of the sf document and re-name into easy
 # recognizable english
 names(germany_sf)
@@ -116,7 +122,9 @@ pharos_sf$detection_outcome <- as.logical(pharos_sf$detection_outcome)
 sf::st_crs(pharos_sf) <- 4326
 sf::st_crs(pharos_sf)
 
-# variograms
+# variograms ====
+
+## best option =====
 varg <- gstat::variogram(detection_outcome ~ 1, data = pharos_sf)
 plot(varg)
 vgm <- gstat::vgm(
@@ -130,6 +138,19 @@ png(filename = here::here("./figs/varg-vgm-020-1-001-Exp.png")) # opens the png
 plot(varg, vgm) # the thing you're actually saving
 dev.off() # turns off the "opener" so you can do other things - you need one of 
 # these every time you "open" with png() 
+
+### trying a bunch of parameter combinations =====
+vgm1 <- gstat::vgm(
+  psill = 0.18, # semivariance at the range
+  range = 1, # distance of the plateau
+  nugget = 0.01, # intercept (sorta)
+  model = "Exp" # exponential model
+)
+# save the plot of a particular parameter combination
+png(filename = here::here("./figs/varg-vgm-018-1-001-Exp.png")) # opens the png
+plot(varg, vgm1) # the thing you're actually saving
+dev.off() #
+
 
 fit_varg <- gstat::fit.variogram(varg, vgm)
 
