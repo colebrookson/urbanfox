@@ -58,7 +58,7 @@ berlin_codes <- germany_code_matches[which(
 berlin_sf <- germany_sf[which(germany_sf$zip_code %in% berlin_codes$zip_code), ]
 
 # plot with a population fill just for fun
-ggplot2::ggplot2::ggplot2::ggplot(berlin_sf) +
+ggplot2::ggplot(berlin_sf) +
     geom_sf() +
     theme_void()
 
@@ -139,22 +139,33 @@ plot(varg, vgm) # the thing you're actually saving
 dev.off() # turns off the "opener" so you can do other things - you need one of 
 # these every time you "open" with png() 
 
-### trying a bunch of parameter combinations =====
+### other combinations =====
 vgm1 <- gstat::vgm(
-  psill = 0.18, # semivariance at the range
+  psill = 0.20, # semivariance at the range
   range = 1, # distance of the plateau
-  nugget = 0.01, # intercept (sorta)
-  model = "Exp" # exponential model
+  nugget = 0.005, # intercept (sorta)
+  model = "Exp" # spherical model
 )
 # save the plot of a particular parameter combination
-png(filename = here::here("./figs/varg-vgm-018-1-001-Exp.png")) # opens the png
+png(filename = here::here("./figs/varg-vgm-020-1-0005-Exp.png")) # opens the png
 plot(varg, vgm1) # the thing you're actually saving
+dev.off() #
+
+vgm2 <- gstat::vgm(
+  psill = 0.2, 
+  range = 1, 
+  nugget = 0.01, 
+  model = "Gau" # ne change rien visuellement
+)
+# save the plot of a particular parameter combination
+png(filename = here::here("./figs/varg-vgm-020-1-001-Gau.png")) # opens the png
+plot(varg, vgm2) # the thing you're actually saving
 dev.off() #
 
 
 fit_varg <- gstat::fit.variogram(varg, vgm)
 
-# now the kriging part
+# krigging ====
 krig <- gstat::krige(
     detection_outcome ~ 1,
     locations = pharos_sf,
@@ -180,3 +191,4 @@ ggplot2::ggsave(
   width = 8,
   bg = "white" # change if you want transparent background  
 )
+
