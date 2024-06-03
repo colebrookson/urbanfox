@@ -106,6 +106,7 @@ ggplot2::ggplot() +
     geom_sf(data = berlin_poly) +# this is what we want
   theme_void()
 
+
 # NOTE
 #' now we want to be able to put the various data we have into a format that
 #' will let us do indicator kriging on it -- binary logical data
@@ -191,4 +192,65 @@ ggplot2::ggsave(
   width = 8,
   bg = "white" # change if you want transparent background  
 )
+
+## alternative krig ====
+### vgm1 ====
+fit_varg1 <- gstat::fit.variogram(varg, vgm1)
+
+krig1 <- gstat::krige(
+  detection_outcome ~ 1,
+  locations = pharos_sf,
+  newdata = grid_sample,
+  model = fit_varg1,
+  nmax = 5
+)
+plot(krig1["var1.pred"])
+
+krig_and_foxes <- ggplot2::ggplot() +
+  geom_sf(data = berlin_poly, alpha = 0.3) +
+  # geom_sf(data = grid_sample, colour = "red", size = 2) + # sampled points
+  geom_sf(data = krig1, aes(fill = var1.pred), shape = 21, size = 3) +
+  geom_sf(data = pharos_sf, aes(colour = detection_outcome), size = 3) + # foxes
+  scale_fill_viridis_c("probability", na.value = "white") +
+  scale_colour_manual("test outcome", values = c("#8a56b8", "#d5363d")) +
+  theme_void() +
+  coord_sf()
+ggplot2::ggsave(
+  filename = here::here("./figs/krigging-with-foxes-outcomes-1.png"),
+  plot = krig_and_foxes,
+  height = 6, 
+  width = 8,
+  bg = "white" # change if you want transparent background  
+)
+
+### vgm2 ====
+fit_varg2 <- gstat::fit.variogram(varg, vgm2)
+
+krig2 <- gstat::krige(
+  detection_outcome ~ 1,
+  locations = pharos_sf,
+  newdata = grid_sample,
+  model = fit_varg2,
+  nmax = 5
+)
+plot(krig2["var1.pred"])
+
+krig_and_foxes <- ggplot2::ggplot() +
+  geom_sf(data = berlin_poly, alpha = 0.3) +
+  # geom_sf(data = grid_sample, colour = "red", size = 2) + # sampled points
+  geom_sf(data = krig2, aes(fill = var1.pred), shape = 21, size = 3) +
+  geom_sf(data = pharos_sf, aes(colour = detection_outcome), size = 3) + # foxes
+  scale_fill_viridis_c("probability", na.value = "white") +
+  scale_colour_manual("test outcome", values = c("#8a56b8", "#d5363d")) +
+  theme_void() +
+  coord_sf()
+ggplot2::ggsave(
+  filename = here::here("./figs/krigging-with-foxes-outcomes-2.png"),
+  plot = krig_and_foxes,
+  height = 6, 
+  width = 8,
+  bg = "white" # change if you want transparent background  
+)
+
+
 
