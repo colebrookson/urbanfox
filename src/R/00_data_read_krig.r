@@ -68,7 +68,7 @@ ggplot2::ggplot(berlin_sf) +
 grid_sample <- sf::st_sample(
     sf::st_as_sfc(berlin_sf),
     # the size is really large to make a fine grid - you can change this
-    size = 1000, type = "regular"
+    size = 10000, type = "regular"
 ) %>%
     sf::st_as_sf()
 # this is important to make sure our georefs are the same
@@ -140,7 +140,7 @@ plot(varg, vgm) # the thing you're actually saving
 dev.off() # turns off the "opener" so you can do other things - you need one of 
 # these every time you "open" with png() 
 
-### other combinations =====
+## other combinations =====
 vgm1 <- gstat::vgm(
   psill = 0.20, # semivariance at the range
   range = 1, # distance of the plateau
@@ -156,7 +156,7 @@ vgm2 <- gstat::vgm(
   psill = 0.2, 
   range = 1, 
   nugget = 0.01, 
-  model = "Gau" # ne change rien visuellement
+  model = "Gau" 
 )
 # save the plot of a particular parameter combination
 png(filename = here::here("./figs/varg-vgm-020-1-001-Gau.png")) # opens the png
@@ -180,7 +180,7 @@ krig_and_foxes <- ggplot2::ggplot() +
     geom_sf(data = berlin_poly, alpha = 0.3) +
     # geom_sf(data = grid_sample, colour = "red", size = 2) + # sampled points
     geom_sf(data = krig, aes(fill = var1.pred), shape = 21, size = 3) +
-    geom_sf(data = pharos_sf, aes(colour = detection_outcome), size = 3) + # foxes
+    geom_sf(data = pharos_sf, aes(colour = detection_outcome), size = 2) + # foxes
     scale_fill_viridis_c("probability", na.value = "white") +
     scale_colour_manual("test outcome", values = c("#8a56b8", "#d5363d")) +
     theme_void() +
@@ -192,6 +192,8 @@ ggplot2::ggsave(
   width = 8,
   bg = "white" # change if you want transparent background  
 )
+
+plot(krig_and_foxes)
 
 ## alternative krig ====
 ### vgm1 ====
@@ -210,7 +212,7 @@ krig_and_foxes <- ggplot2::ggplot() +
   geom_sf(data = berlin_poly, alpha = 0.3) +
   # geom_sf(data = grid_sample, colour = "red", size = 2) + # sampled points
   geom_sf(data = krig1, aes(fill = var1.pred), shape = 21, size = 3) +
-  geom_sf(data = pharos_sf, aes(colour = detection_outcome), size = 3) + # foxes
+  geom_sf(data = pharos_sf, aes(colour = detection_outcome), size = 2) + # foxes
   scale_fill_viridis_c("probability", na.value = "white") +
   scale_colour_manual("test outcome", values = c("#8a56b8", "#d5363d")) +
   theme_void() +
@@ -239,7 +241,7 @@ krig_and_foxes <- ggplot2::ggplot() +
   geom_sf(data = berlin_poly, alpha = 0.3) +
   # geom_sf(data = grid_sample, colour = "red", size = 2) + # sampled points
   geom_sf(data = krig2, aes(fill = var1.pred), shape = 21, size = 3) +
-  geom_sf(data = pharos_sf, aes(colour = detection_outcome), size = 3) + # foxes
+  geom_sf(data = pharos_sf, aes(colour = detection_outcome), size = 2) + # foxes
   scale_fill_viridis_c("probability", na.value = "white") +
   scale_colour_manual("test outcome", values = c("#8a56b8", "#d5363d")) +
   theme_void() +
@@ -253,4 +255,16 @@ ggplot2::ggsave(
 )
 
 
+#trying to make it prettier
 
+krig_and_foxes <- ggplot2::ggplot() +
+  geom_sf(data = berlin_poly, alpha = 0.3) +
+  geom_sf(data = krig, aes(fill = var1.pred), shape = 21, size = 3, colour = NA, stroke = 0) + # same color outline
+  geom_sf(data = pharos_sf, aes(fill = detection_outcome), size = 2, shape = 21, colour = "black", stroke = 0.5) + # black outline
+  scale_fill_viridis_c("probability", na.value = "white") +
+  scale_colour_manual("test outcome", values = c("#40e0d0", "#d5363d")) +
+  theme_void() +
+  coord_sf()
+plot(krig_and_foxes)
+
+?geom_sf
