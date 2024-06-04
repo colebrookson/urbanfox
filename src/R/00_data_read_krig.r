@@ -254,12 +254,35 @@ ggplot2::ggsave(
   bg = "white" # change if you want transparent background  
 )
 
-
-#trying to make it prettier
+# map prediction only ====
+krig_and_foxes <- ggplot2::ggplot() +
+  geom_sf(data = berlin_poly, alpha = 0.3) +
+  geom_sf(data = krig, aes(fill = var1.pred), shape = 21, size = 3) +
+  scale_fill_viridis_c("probability", na.value = "white") +
+  theme_void() +
+  coord_sf()
+plot(krig_and_foxes)
 
 krig_and_foxes <- ggplot2::ggplot() +
   geom_sf(data = berlin_poly, alpha = 0.3) +
-  geom_sf(data = krig, aes(fill = var1.pred), shape = 21, size = 3, colour = NA, stroke = 0) + # same color outline
+  geom_sf(data = krig1, aes(fill = var1.pred), shape = 21, size = 3) +
+  scale_fill_viridis_c("probability", na.value = "white") +
+  theme_void() +
+  coord_sf()
+plot(krig_and_foxes)
+
+krig_and_foxes <- ggplot2::ggplot() +
+  geom_sf(data = berlin_poly, alpha = 0.3) +
+  geom_sf(data = krig2, aes(fill = var1.pred), shape = 21, size = 3) +
+  scale_fill_viridis_c("probability", na.value = "white") +
+  theme_void() +
+  coord_sf()
+plot(krig_and_foxes)
+
+#trying to make it prettier
+krig_and_foxes <- ggplot2::ggplot() +
+  geom_sf(data = berlin_poly, alpha = 0.3) +
+  geom_sf(data = krig, aes(fill = var1.pred), shape = 21, size = 3, colour = NA, stroke = 0) + # same color outline and fill
   geom_sf(data = pharos_sf, aes(fill = detection_outcome), size = 2, shape = 21, colour = "black", stroke = 0.5) + # black outline
   scale_fill_viridis_c("probability", na.value = "white") +
   scale_colour_manual("test outcome", values = c("#40e0d0", "#d5363d")) +
