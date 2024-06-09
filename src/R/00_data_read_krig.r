@@ -279,6 +279,60 @@ krig_and_foxes <- ggplot2::ggplot() +
   coord_sf()
 plot(krig_and_foxes)
 
+# bootstrap ====
+# Tim asked to run a bootstrap (sous-échantillonnage avec remise)
+# x10. Then, run the krig and note if blank spaces move.
+library(boot)
+
+##first try ====
+med_boot <- function(x, i) median(x[i])
+boot_res <- boot(pharos_data$detection_outcome, med_boot, R = 10000)
+boot_res <- as.data.frame(boot_res)
+class(boot_res) # class=boot (is not working)
+
+##second try ==== 
+nBoots<-10 #number of bootstraps 
+bootResult<-list()
+for (i in seq_len(nBoots)){
+  bootResult[[i]]<-pharos_data[sample(seq_len(nrow(pharos_data)), nrow(pharos_data), replace=TRUE), ]
+}
+bootResult
+bootResult <- as.data.frame(bootResult)
+
+bootResults_sf <- sf::st_as_sf(bootResult, coords = c("longitude", "latitude"))
+sf::st_crs(bootResults_sf) <- 4326
+bootResults_sf <- bootResults_sf[which(
+  bootResults_sf$detection_outcome != "inconclusive"
+), ]
+bootResults_sf$detection_outcome[which(
+  bootResults_sf$detection_outcome == "positive"
+)] <- TRUE
+bootResults_sf$detection_outcome[which(
+  bootResults_sf$detection_outcome == "negative"
+)] <- FALSE
+bootResults_sf$detection_outcome <- as.logical(bootResults_sf$detection_outcome)
+sf::st_crs(bootResults_sf) <- 4326
+sf::st_crs(bootResults_sf)
+
+krigb <- gstat::krige(
+  detection_outcome ~ 1,
+  locations = bootResults_sf,
+  newdata = grid_sample,
+  model = fit_varg,
+  nmax = 5
+)
+krigb["var1.pred"]
+
+krig_boot <- ggplot2::ggplot() +
+  geom_sf(data = berlin_poly, alpha = 0.3) +
+  geom_sf(data = krigb, aes(fill = var1.pred), shape = 21, size = 3) +
+  scale_fill_viridis_c("probability", na.value = "white") +
+  theme_void() +
+  coord_sf()
+plot(krig_boot) # krig it 10x
+
+
+# aesthetic ====
 #trying to make it prettier
 krig_and_foxes <- ggplot2::ggplot() +
   geom_sf(data = berlin_poly, alpha = 0.3) +
