@@ -288,7 +288,7 @@ library(boot)
 med_boot <- function(x, i) median(x[i])
 boot_res <- boot(pharos_data$detection_outcome, med_boot, R = 10000)
 boot_res <- as.data.frame(boot_res)
-class(boot_res) # class=boot (is not working)
+class(boot_res) # class=boot (can't find a way to switch it to dataframe)
 
 ##second try ==== 
 nBoots<-10 #number of bootstraps 
@@ -345,3 +345,31 @@ krig_and_foxes <- ggplot2::ggplot() +
 plot(krig_and_foxes)
 
 ?geom_sf
+
+# Covariance matrix Warnings ====
+# covariance matrix = une matrice qui met en relation les points. 
+# le warning indique que la matrice est singulière (peut pas être inversée)
+# ce qui peut être du soit :
+## 1-les points sont dupliqués/trop proches ====
+#solution
+pharos_data <- pharos_data[-zerodist(pharos_data)[,1],] #zerodist n'existe pas
+
+## 2-il n'y a pas de données (sampling insuffisant) ====
+## 3-absence de variabilité à un point ====
+## 4-mauvais modele utilisé (essayer avec Gau) ====
+# solution
+vgm <- gstat::vgm(
+  psill = 0.2, 
+  range = 1, 
+  nugget = 0.01, 
+  model = "Gau" # ne change rien visuellement
+)
+
+## Solution : Regularization ====
+if (is.singular(cov_matrix)) {
+  cov_matrix <- cov_matrix + diag(nrow(cov_matrix)) * 1e-10
+}
+print(is.singular(cov_matrix))#(message d'erreur)
+
+
+
