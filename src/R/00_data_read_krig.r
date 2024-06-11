@@ -123,25 +123,18 @@ pharos_sf$detection_outcome <- as.logical(pharos_sf$detection_outcome)
 sf::st_crs(pharos_sf) <- 4326
 sf::st_crs(pharos_sf)
 
-# variograms ====
+# Trouver les points dupliqués (tolérance de distance très petite)
+tolerance <- 1e-9
+duplicates <- st_is_within_distance(pharos_sf, pharos_sf, dist = tolerance)
+# Supprimer les doublons (en conservant uniquement le premier point de chaque groupe de doublons)
+unique_indices <- which(!duplicated(duplicates))
+pharos_sf <- pharos_sf[unique_indices, ]
 
-## best option =====
+# variograms ====
 varg <- gstat::variogram(detection_outcome ~ 1, data = pharos_sf)
 plot(varg)
-vgm <- gstat::vgm(
-    psill = 0.20, # semivariance at the range
-    range = 1, # distance of the plateau
-    nugget = 0.01, # intercept (sorta)
-    model = "Exp" # exponential model
-)
-# save the plot of a particular parameter combination
-png(filename = here::here("./figs/varg-vgm-020-1-001-Exp.png")) # opens the png
-plot(varg, vgm) # the thing you're actually saving
-dev.off() # turns off the "opener" so you can do other things - you need one of 
-# these every time you "open" with png() 
-
-## other combinations =====
-vgm1 <- gstat::vgm(
+## best option ====
+vgm0 <- gstat::vgm(
   psill = 0.20, # semivariance at the range
   range = 1, # distance of the plateau
   nugget = 0.005, # intercept (sorta)
@@ -149,8 +142,21 @@ vgm1 <- gstat::vgm(
 )
 # save the plot of a particular parameter combination
 png(filename = here::here("./figs/varg-vgm-020-1-0005-Exp.png")) # opens the png
-plot(varg, vgm1) # the thing you're actually saving
+plot(varg, vgm0) # the thing you're actually saving
 dev.off() #
+
+## other combinations =====
+vgm1 <- gstat::vgm(
+  psill = 0.20, # semivariance at the range
+  range = 1, # distance of the plateau
+  nugget = 0.01, # intercept (sorta)
+  model = "Exp" # exponential model
+)
+# save the plot of a particular parameter combination
+png(filename = here::here("./figs/varg-vgm-020-1-001-Exp.png")) # opens the png
+plot(varg, vgm1) # the thing you're actually saving
+dev.off() # turns off the "opener" so you can do other things - you need one of 
+# these every time you "open" with png() 
 
 vgm2 <- gstat::vgm(
   psill = 0.2, 
@@ -164,7 +170,7 @@ plot(varg, vgm2) # the thing you're actually saving
 dev.off() #
 
 
-fit_varg <- gstat::fit.variogram(varg, vgm)
+fit_varg <- gstat::fit.variogram(varg, vgm0)
 
 # krigging ====
 krig <- gstat::krige(
@@ -254,99 +260,6 @@ ggplot2::ggsave(
   bg = "white" # change if you want transparent background  
 )
 
-# Covariance matrix warnings ====
-# covariance matrix = une matrice qui met en relation les points. 
-# warning = la matrice est singulière (peut pas être inversée)
-
-## Explanations ====
-# 1-points are duplicated/too close
-pharos_data <- pharos_data[-zerodist(pharos_data)[,1],] #zerodist doesn't exist
-# 2-no data available (insufficient sampling) 
-# 3-no single-point variability (we tried bootstrap, didn't work)
-# 4-wrong model used (try with Gau)
-vgm <- gstat::vgm(
-  psill = 0.2, 
-  range = 1, 
-  nugget = 0.01, 
-  model = "Gau" # Tim said it wasn't better
-)
-
-## Solutions ====
-### bootstrap ====
-# Tim asked to run a bootstrap (sous-échantillonnage avec remise)
-# x10. Then, run the krig and note if blank spaces move.
-library(boot)
-
-####first try ====
-med_boot <- function(x, i) median(x[i])
-boot_res <- boot(pharos_data$detection_outcome, med_boot, R = 10000)
-boot_res <- as.data.frame(boot_res)
-class(boot_res) # class=boot (can't find a way to switch it to dataframe)
-
-####second try ==== 
-nBoots<-10 #number of bootstraps 
-bootResult<-list()
-for (i in seq_len(nBoots)){
-  bootResult[[i]]<-pharos_data[sample(seq_len(nrow(pharos_data)), nrow(pharos_data), replace=TRUE), ]
-}
-bootResult
-bootResult <- as.data.frame(bootResult)
-
-bootResults_sf <- sf::st_as_sf(bootResult, coords = c("longitude", "latitude"))
-sf::st_crs(bootResults_sf) <- 4326
-bootResults_sf <- bootResults_sf[which(
-  bootResults_sf$detection_outcome != "inconclusive"
-), ]
-bootResults_sf$detection_outcome[which(
-  bootResults_sf$detection_outcome == "positive"
-)] <- TRUE
-bootResults_sf$detection_outcome[which(
-  bootResults_sf$detection_outcome == "negative"
-)] <- FALSE
-bootResults_sf$detection_outcome <- as.logical(bootResults_sf$detection_outcome)
-sf::st_crs(bootResults_sf) <- 4326
-sf::st_crs(bootResults_sf)
-
-krigb <- gstat::krige(
-  detection_outcome ~ 1,
-  locations = bootResults_sf,
-  newdata = grid_sample,
-  model = fit_varg,
-  nmax = 5
-)
-krigb["var1.pred"]
-
-krig_boot <- ggplot2::ggplot() +
-  geom_sf(data = berlin_poly, alpha = 0.3) +
-  geom_sf(data = krigb, aes(fill = var1.pred), shape = 21, size = 3) +
-  scale_fill_viridis_c("probability", na.value = "white") +
-  theme_void() +
-  coord_sf()
-plot(krig_boot) # krig it 10x
-
-### Regularization ====
-library(gstat)
-# Exemple de régularisation
-regularization_constant <- 1e-10
-# Fonction pour ajuster la matrice de covariance
-adjust_covariance_matrix <- function(cov_matrix, regularization_constant) {
-  cov_matrix + diag(regularization_constant, nrow(cov_matrix))
-}
-# Fonction de prédiction ajustée pour inclure la régularisation
-predict_pharos <- function(pharos_sf, newdata, block = NULL, ...) {
-  # Ajuster la matrice de covariance
-  pharos_sf$detection_outcome$covariance <- adjust_covariance_matrix(pharos_sf$variogram$covariance, regularization_constant)
-  # Continuez avec la prédiction habituelle
-  predict.gstat(pharos_sf, newdata = newdata, block = block, ...)
-}
-# Appliquer la prédiction avec la régularisation
-prediction <- predict_pharos(pharos_sf, newdata = newdata)
-
-### Interpolation Spline ====
-interpSpline(pharos_sf, bSpline = FALSE, period = NULL,
-             ord = 4L,
-             na.action = na.fail, sparse = FALSE)
-#interpSpline doesn't exist + spline function doesn't work
 
 # aesthetic ====
 #trying to make it prettier
