@@ -349,27 +349,28 @@ plot(krig_and_foxes)
 # Covariance matrix Warnings ====
 # covariance matrix = une matrice qui met en relation les points. 
 # le warning indique que la matrice est singulière (peut pas être inversée)
-# ce qui peut être du soit :
-## 1-les points sont dupliqués/trop proches ====
-#solution
-pharos_data <- pharos_data[-zerodist(pharos_data)[,1],] #zerodist n'existe pas
+# Explanations:
 
-## 2-il n'y a pas de données (sampling insuffisant) ====
-## 3-absence de variabilité à un point ====
-## 4-mauvais modele utilisé (essayer avec Gau) ====
-# solution
+# 1-points are duplicated/too close
+pharos_data <- pharos_data[-zerodist(pharos_data)[,1],] #zerodist doesn't exist
+
+# 2-no data available (insufficient sampling) 
+
+# 3-no single-point variability (we tried bootstrap, didn't work)
+
+## 4-wrong model used (try with Gau)
 vgm <- gstat::vgm(
   psill = 0.2, 
   range = 1, 
   nugget = 0.01, 
-  model = "Gau" # ne change rien visuellement
+  model = "Gau" # Tim said it wasn't better
 )
 
 ## Solution : Regularization ====
 if (is.singular(cov_matrix)) {
   cov_matrix <- cov_matrix + diag(nrow(cov_matrix)) * 1e-10
 }
-print(is.singular(cov_matrix))#(message d'erreur)
+print(is.singular(cov_matrix))#(error message)
 
 
 
