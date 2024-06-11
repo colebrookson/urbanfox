@@ -257,16 +257,13 @@ ggplot2::ggsave(
 # Covariance matrix warnings ====
 # covariance matrix = une matrice qui met en relation les points. 
 # warning = la matrice est singulière (peut pas être inversée)
-# Explanations:
 
+## Explanations ====
 # 1-points are duplicated/too close
 pharos_data <- pharos_data[-zerodist(pharos_data)[,1],] #zerodist doesn't exist
-
 # 2-no data available (insufficient sampling) 
-
 # 3-no single-point variability (we tried bootstrap, didn't work)
-
-## 4-wrong model used (try with Gau)
+# 4-wrong model used (try with Gau)
 vgm <- gstat::vgm(
   psill = 0.2, 
   range = 1, 
@@ -274,24 +271,19 @@ vgm <- gstat::vgm(
   model = "Gau" # Tim said it wasn't better
 )
 
-## Regularization ====
-if (is.singular(cov_matrix)) {
-  cov_matrix <- cov_matrix + diag(nrow(cov_matrix)) * 1e-10
-}
-print(is.singular(cov_matrix))#(error message)
-
-## bootstrap ====
+## Solutions ====
+### bootstrap ====
 # Tim asked to run a bootstrap (sous-échantillonnage avec remise)
 # x10. Then, run the krig and note if blank spaces move.
 library(boot)
 
-###first try ====
+####first try ====
 med_boot <- function(x, i) median(x[i])
 boot_res <- boot(pharos_data$detection_outcome, med_boot, R = 10000)
 boot_res <- as.data.frame(boot_res)
 class(boot_res) # class=boot (can't find a way to switch it to dataframe)
 
-###second try ==== 
+####second try ==== 
 nBoots<-10 #number of bootstraps 
 bootResult<-list()
 for (i in seq_len(nBoots)){
@@ -332,6 +324,29 @@ krig_boot <- ggplot2::ggplot() +
   coord_sf()
 plot(krig_boot) # krig it 10x
 
+### Regularization ====
+library(gstat)
+# Exemple de régularisation
+regularization_constant <- 1e-10
+# Fonction pour ajuster la matrice de covariance
+adjust_covariance_matrix <- function(cov_matrix, regularization_constant) {
+  cov_matrix + diag(regularization_constant, nrow(cov_matrix))
+}
+# Fonction de prédiction ajustée pour inclure la régularisation
+predict_pharos <- function(pharos_sf, newdata, block = NULL, ...) {
+  # Ajuster la matrice de covariance
+  pharos_sf$detection_outcome$covariance <- adjust_covariance_matrix(pharos_sf$variogram$covariance, regularization_constant)
+  # Continuez avec la prédiction habituelle
+  predict.gstat(pharos_sf, newdata = newdata, block = block, ...)
+}
+# Appliquer la prédiction avec la régularisation
+prediction <- predict_pharos(pharos_sf, newdata = newdata)
+
+### Interpolation Spline ====
+interpSpline(pharos_sf, bSpline = FALSE, period = NULL,
+             ord = 4L,
+             na.action = na.fail, sparse = FALSE)
+#interpSpline doesn't exist + spline function doesn't work
 
 # aesthetic ====
 #trying to make it prettier
