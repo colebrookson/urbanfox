@@ -254,7 +254,33 @@ ggplot2::ggsave(
   bg = "white" # change if you want transparent background  
 )
 
-# map prediction only ====
+# Covariance matrix warnings ====
+# covariance matrix = une matrice qui met en relation les points. 
+# warning = la matrice est singulière (peut pas être inversée)
+# Explanations:
+
+# 1-points are duplicated/too close
+pharos_data <- pharos_data[-zerodist(pharos_data)[,1],] #zerodist doesn't exist
+
+# 2-no data available (insufficient sampling) 
+
+# 3-no single-point variability (we tried bootstrap, didn't work)
+
+## 4-wrong model used (try with Gau)
+vgm <- gstat::vgm(
+  psill = 0.2, 
+  range = 1, 
+  nugget = 0.01, 
+  model = "Gau" # Tim said it wasn't better
+)
+
+## Regularization ====
+if (is.singular(cov_matrix)) {
+  cov_matrix <- cov_matrix + diag(nrow(cov_matrix)) * 1e-10
+}
+print(is.singular(cov_matrix))#(error message)
+
+## map prediction only ====
 krig_and_foxes <- ggplot2::ggplot() +
   geom_sf(data = berlin_poly, alpha = 0.3) +
   geom_sf(data = krig, aes(fill = var1.pred), shape = 21, size = 3) +
@@ -279,18 +305,18 @@ krig_and_foxes <- ggplot2::ggplot() +
   coord_sf()
 plot(krig_and_foxes)
 
-# bootstrap ====
+## bootstrap ====
 # Tim asked to run a bootstrap (sous-échantillonnage avec remise)
 # x10. Then, run the krig and note if blank spaces move.
 library(boot)
 
-##first try ====
+###first try ====
 med_boot <- function(x, i) median(x[i])
 boot_res <- boot(pharos_data$detection_outcome, med_boot, R = 10000)
 boot_res <- as.data.frame(boot_res)
 class(boot_res) # class=boot (can't find a way to switch it to dataframe)
 
-##second try ==== 
+###second try ==== 
 nBoots<-10 #number of bootstraps 
 bootResult<-list()
 for (i in seq_len(nBoots)){
@@ -343,34 +369,6 @@ krig_and_foxes <- ggplot2::ggplot() +
   theme_void() +
   coord_sf()
 plot(krig_and_foxes)
-
-?geom_sf
-
-# Covariance matrix Warnings ====
-# covariance matrix = une matrice qui met en relation les points. 
-# le warning indique que la matrice est singulière (peut pas être inversée)
-# Explanations:
-
-# 1-points are duplicated/too close
-pharos_data <- pharos_data[-zerodist(pharos_data)[,1],] #zerodist doesn't exist
-
-# 2-no data available (insufficient sampling) 
-
-# 3-no single-point variability (we tried bootstrap, didn't work)
-
-## 4-wrong model used (try with Gau)
-vgm <- gstat::vgm(
-  psill = 0.2, 
-  range = 1, 
-  nugget = 0.01, 
-  model = "Gau" # Tim said it wasn't better
-)
-
-## Solution : Regularization ====
-if (is.singular(cov_matrix)) {
-  cov_matrix <- cov_matrix + diag(nrow(cov_matrix)) * 1e-10
-}
-print(is.singular(cov_matrix))#(error message)
 
 
 
