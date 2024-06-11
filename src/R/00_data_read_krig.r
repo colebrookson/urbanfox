@@ -280,31 +280,6 @@ if (is.singular(cov_matrix)) {
 }
 print(is.singular(cov_matrix))#(error message)
 
-## map prediction only ====
-krig_and_foxes <- ggplot2::ggplot() +
-  geom_sf(data = berlin_poly, alpha = 0.3) +
-  geom_sf(data = krig, aes(fill = var1.pred), shape = 21, size = 3) +
-  scale_fill_viridis_c("probability", na.value = "white") +
-  theme_void() +
-  coord_sf()
-plot(krig_and_foxes)
-
-krig_and_foxes <- ggplot2::ggplot() +
-  geom_sf(data = berlin_poly, alpha = 0.3) +
-  geom_sf(data = krig1, aes(fill = var1.pred), shape = 21, size = 3) +
-  scale_fill_viridis_c("probability", na.value = "white") +
-  theme_void() +
-  coord_sf()
-plot(krig_and_foxes)
-
-krig_and_foxes <- ggplot2::ggplot() +
-  geom_sf(data = berlin_poly, alpha = 0.3) +
-  geom_sf(data = krig2, aes(fill = var1.pred), shape = 21, size = 3) +
-  scale_fill_viridis_c("probability", na.value = "white") +
-  theme_void() +
-  coord_sf()
-plot(krig_and_foxes)
-
 ## bootstrap ====
 # Tim asked to run a bootstrap (sous-échantillonnage avec remise)
 # x10. Then, run the krig and note if blank spaces move.
