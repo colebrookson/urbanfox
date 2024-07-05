@@ -11,10 +11,8 @@ using DelimitedFiles
 using CSV
 using DataFrames
 
-# pharos = CSV.read("C:\\Users\\abuss\\github\\urbanfox\\julia\\pharossf.csv", DataFrame)
-
 # Lecture des données depuis le fichier en utilisant DelimitedFiles.readdlm
-U_local = readdlm("C:\\Users\\abuss\\github\\urbanfox\\julia\\pharossf.csv")
+U_local = readdlm("C:\\Users\\abuss\\github\\urbanfox\\data\\clean\\pharos_location.csv", ',', Float64)
 
 # Choix du nombre de sites
 number_of_candidate_sites = min(200, count(!isnan, U_local))
@@ -24,24 +22,26 @@ locations = U_local |>
             seed(BalancedAcceptance(; numpoints=number_of_candidate_sites)) |>
             refine(AdaptiveSpatial(; numpoints=number_of_sites)) |>
             first
+U_local[locations]
 
 # Sauvegarde des coordonées au format ligne/colonne (il y à une façon plus élégante mais 🤷)
 grid_coordinates_local = rotr90(hcat([[location[2], location[1]] for location in locations]...))
 grid_coordinates_local
 
-writedlm("coord_pharos.txt", grid_coordinates_local)
+writedlm("coord_pharos50.txt", grid_coordinates_local)
 
 # #voir les données
-# siteselection()
+siteselection(U_local)
 
-#With Entropy (in Julia)
+#With Entropy 
 using BiodiversityObservationNetworks
 using NeutralLandscapes
 using CairoMakie
 using DelimitedFiles
 using CSV
 using DataFrames
-U_local = readdlm("C:\\Users\\abuss\\github\\urbanfox\\julia\\pharossf.csv")
+
+U_local = readdlm("C:\\Users\\abuss\\github\\urbanfox\\julia\\pharos_location.csv")
 
 entropize(U_local)
 
