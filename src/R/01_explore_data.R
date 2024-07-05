@@ -18,6 +18,9 @@ germany_code_matches <- readr::read_csv(here::here(
 pharos_coord <- read.delim(here::here(
   "./julia/coord_pharos.txt"
 ))
+pharos_data <- readr::read_csv(here::here(
+  "./data/raw/pharos_data.csv"
+))
 
 # clean up data 
 names(germany_sf)
@@ -42,14 +45,14 @@ grid_sample <- sf::st_sample(
 sf::st_crs(grid_sample) <- 4326
 
 # first, make sure the data are of the same type (sf)
-pharos_sf2 <- sf::st_as_sf(pharos_coord, coords = c("x", "y"))
-sf::st_crs(pharos_sf2) <- 4326
+pharos_sf <- sf::st_as_sf(pharos_data, coords = c("longitude", "latitude"))
+sf::st_crs(pharos_sf) <- 4326
 
 # make sure we can plot them all on the same geo-location
 ggplot2::ggplot() +
   geom_sf(data = berlin_sf, aes(fill = population), alpha = 0.3) +
   geom_sf(data = grid_sample, colour = "red", size = 2) + # sampled points
-  geom_sf(data = pharos_sf2, colour = "purple", size = 3) + # foxes!
+  geom_sf(data = pharos_sf, colour = "purple", size = 3) + # foxes!
   theme_void() +
   coord_sf()
 
@@ -61,7 +64,7 @@ ggplot2::ggplot() +
   theme_void()
 
 # variograms 
-varg <- gstat::variogram(detection_outcome ~ 1, data = pharos_sf2) #by what do I replace detection_outcome
+varg <- gstat::variogram(detection_outcome ~ 1, data = pharos_sf) #by what do I replace detection_outcome
 plot(varg)
 ## best option 
 vgm0 <- gstat::vgm(
@@ -75,7 +78,7 @@ fit_varg <- gstat::fit.variogram(varg, vgm0)
 # krigging 
 krig <- gstat::krige(
   detection_outcome ~ 1,
-  locations = pharos_sf2,
+  locations = pharos_sf,
   newdata = grid_sample,
   model = fit_varg,
   nmax = 5
@@ -85,7 +88,7 @@ plot(krig["var1.pred"])
 krig_and_foxes <- ggplot2::ggplot() +
   geom_sf(data = berlin_poly, alpha = 0.3) +
   geom_sf(data = krig, aes(fill = var1.pred), shape = 21, size = 3) +
-  geom_sf(data = pharos_sf2, aes(colour = detection_outcome), size = 2) + # foxes
+  geom_sf(data = pharos_sf, aes(colour = detection_outcome), size = 2) + # foxes
   scale_fill_viridis_c("probability", na.value = "white") +
   scale_colour_manual("test outcome", values = c("#8a56b8", "#d5363d")) +
   theme_void() +
