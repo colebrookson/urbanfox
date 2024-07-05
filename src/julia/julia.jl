@@ -22,7 +22,7 @@ locations = U_local |>
             seed(BalancedAcceptance(; numpoints=number_of_candidate_sites)) |>
             refine(AdaptiveSpatial(; numpoints=number_of_sites)) |>
             first
-U_local[locations]
+U_local[grid_coordinates_local]
 
 # Sauvegarde des coordonées au format ligne/colonne (il y à une façon plus élégante mais 🤷)
 grid_coordinates_local = rotr90(hcat([[location[2], location[1]] for location in locations]...))
@@ -33,7 +33,7 @@ writedlm("coord_pharos50.txt", grid_coordinates_local)
 # #voir les données
 siteselection(U_local)
 
-#With Entropy 
+# With Entropy 
 using BiodiversityObservationNetworks
 using NeutralLandscapes
 using CairoMakie
