@@ -206,44 +206,47 @@ plot(krig_and_foxes)
 
 ## save as raster ====
 
+# we need to make a raster "template" of the area we're using
 raster_template <- terra::rast(terra::vect(berlin_poly), res = 0.0005)
 raster_area <- terra::rasterize(terra::vect(berlin_poly), raster_template)
-terra::plot(raster_area)
+terra::plot(raster_area) # this shows it
 
+# this is so we can still use our gstat function, but to specify we need to
+# interpolate based off these values
+interpolate_gstat <- function(model, x, crs, ...) {
+  v <- st_as_sf(x, coords = c("x", "y"), crs = crs)
+  p <- predict(model, v, ...)
+  as.data.frame(p)[, 1:2]
+}
 
-krig_raster <- krig %>%
-  terra::vect() %>%
-  terra::rast()
-
-terra::values(krig_raster) <- krig$var1.pred
-terra::plot(krig_raster)
-
-# Convert points to sp (assumes that the sf object is called example_points)
-krig_points <- as(krig, "Spatial")
-
-# Generate empty raster layer and rasterize points
-krig_raster <- raster::raster(
-  crs = crs(krig_points),
-  # vals = 0,
-  resolution = 0.005,
-  ext = raster::extent(krig_points)
-) %>%
-  raster::rasterize(krig_points, .)
-raster::plot(krig_raster, "var1.pred")
-
-
-template <- terra::rast(terra::vect(krig), res = 0.005)
-poly_raster <- raster::rasterize(terra::vect(krig), template)
-plot(poly_raster)
-
-krig_raster <- terra::as.raster(poly_raster)
-class(krig_raster)
-
-terra::writeRaster(krig_raster,
-  here::here("./clean/krig_raster.gtif"),
-  overwrite = TRUE
+# re-do the krigging without the krige wrapper so it's a bit more clear
+krig_for_raster <- gstat::gstat(
+  formula = detection_outcome ~ 1,
+  locations = pharos_sf,
+  # newdata = grid_sample,
+  model = fit_varg,
+  nmax = 7
 )
 
+# interpolate because before we were dealing with points and we want a
+# continuous "space" which is represented as a raster here
+# THIS TAKES A FEW MINUTES
+interpolated_raster <- terra::interpolate(
+  raster_area,
+  krig_for_raster,
+  debug.level = 0,
+  fun = interpolate_gstat, crs = crs(raster_area), index = 1
+)
+
+# the mask takes away the NA values (aka the areas we don't want)
+interpolated_raster <- terra::mask(interpolated_raster, raster_area)
+terra::plot(interpolated_raster) # shows the result
+
+terra::writeRaster(
+  interpolated_raster, # this now works cos we're writing SpatRaster as a tif
+  here::here("./data/clean/krig_raster.tif"),
+  overwrite = TRUE
+)
 
 ## alternative krig ====
 ### vgm1 ====
