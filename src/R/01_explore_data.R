@@ -91,3 +91,5 @@ plot(krig_500pts)
 
 # With entropy ====
 
+
+

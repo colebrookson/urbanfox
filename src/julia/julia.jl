@@ -30,7 +30,7 @@ grid_coordinates_local
 
 writedlm("coord_pharos50.txt", grid_coordinates_local)
 
-# #voir les données
+# voir les données
 siteselection(U_local)
 
 # With Entropy 
@@ -41,7 +41,7 @@ using DelimitedFiles
 using CSV
 using DataFrames
 
-U_local = readdlm("C:\\Users\\abuss\\github\\urbanfox\\julia\\pharos_location.csv")
+U_local = readdlm("C:\\Users\\abuss\\github\\urbanfox\\data\\clean\\pharos_location.csv")
 
 entropize(U_local)
 

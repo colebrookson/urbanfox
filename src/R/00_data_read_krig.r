@@ -201,6 +201,23 @@ ggplot2::ggsave(
 
 plot(krig_and_foxes)
 
+##save as raster ====
+library(raster)
+library(terra)
+
+template = rast(vect(krig),res=0.005)
+poly_raster <- rasterize(vect(krig), template)
+plot(poly_raster,col="red")
+
+krig_raster <- as.raster(poly_raster)
+class(krig_raster)
+
+writeRaster(krig_raster, 
+            "./figs/krig_raster.png", 
+            format="Gtiff", 
+            overwrite = TRUE) 
+?writeRaster
+
 ## alternative krig ====
 ### vgm1 ====
 fit_varg1 <- gstat::fit.variogram(varg, vgm1)
