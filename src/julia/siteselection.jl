@@ -34,4 +34,4 @@ hidedecorations!(ax)
 save("map.png", current_figure())
 current_figure()
 
-julia siteselection.jl
+#julia siteselection.jl

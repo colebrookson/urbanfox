@@ -1,7 +1,7 @@
 using BiodiversityObservationNetworks
 using NeutralLandscapes
 using CairoMakie
-using PyPlot
+#using PyPlot
 
 #example
 measurements = rand(MidpointDisplacement(), (200, 200)) .* 100
@@ -29,20 +29,24 @@ plotPointsHeatmap()
 
 # reading in the raster (outline of berlin)
 using Pkg
-using GMT
-file = gmtread("C:\\Users\\abuss\\github\\urbanfox\\data\\clean\\krig_raster.tif")
+using ArchGDAL
+#Pkg.add("ArchGDAL")
 
-# trying to figure out why I can't entropize it
-map_entropy = convert.(Float64, file)
+file = ArchGDAL.read("C:\\Users\\abuss\\github\\urbanfox\\data\\clean\\krig_raster.tif")
+
+#raster band 
+band = ArchGDAL.getband(file, 1) 
+data = ArchGDAL.read(band) # Read as UInt32
+data_matrix = Float64.(data) # Convert to Float64
 
 #entropize berlin map
-heatmap(map_entropy) #working
+CairoMakie.heatmap(data_matrix) #working
 
-map_e = entropize(map_entropy) 
-heatmap(map_e) #not working
+map_e = entropize(data_matrix) 
+heatmap(map_e) #maybe working (still loading)
 
 locations =
-    map_entropy |> 
+    data_matrix |> 
     entropize |> 
     seed(BalancedAcceptance(; numpoints = 100)) |> 
-    first
+    first #maybe working (still loading)
