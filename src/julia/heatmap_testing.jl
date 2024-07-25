@@ -42,11 +42,29 @@ data_matrix = Float64.(data) # Convert to Float64
 #entropize berlin map
 CairoMakie.heatmap(data_matrix) #working
 
-map_e = entropize(data_matrix) 
-heatmap(map_e) #maybe working (still loading)
+#map_e = entropize(data_matrix) 
+#heatmap(map_e) #might work (still loading)
+
+import Random
+Random.seed!(12345)
 
 locations =
     data_matrix |> 
-    entropize |> 
-    seed(BalancedAcceptance(; numpoints = 100)) |> 
-    first #maybe working (still loading)
+    seed(BalancedAcceptance(; numpoints = 70)) |> 
+    refine(AdaptiveSpatial(; numpoints=50)) |>
+    first #might work (still loading)
+
+
+    
+fig = Makie.Figure()
+CairoMakie.heatmap(data_matrix)
+CairoMakie.scatter!(getindex.(locations, 1), getindex.(locations, 2), color=:orange)
+current_figure()
+
+density(filter(!isnan, vec(data_matrix)))
+[data_matrix[location] for location in locations] |> density!
+current_figure()
+
+[(location[1], location[2], data_matrix[location]) for location in locations]
+
+#exporter les données (coordonnées et prévalence pour le krigger)
