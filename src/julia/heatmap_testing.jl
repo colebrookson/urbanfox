@@ -40,7 +40,7 @@ data = ArchGDAL.read(band) # Read as UInt32
 data_matrix = Float64.(data) # Convert to Float64
 
 #entropize berlin map
-CairoMakie.heatmap(data_matrix) #working
+CairoMakie.heatmap(data_matrix) 
 
 #map_e = entropize(data_matrix) 
 #heatmap(map_e) #might work (still loading)
@@ -50,12 +50,10 @@ Random.seed!(12345)
 
 locations =
     data_matrix |> 
-    seed(BalancedAcceptance(; numpoints = 70)) |> 
-    refine(AdaptiveSpatial(; numpoints=50)) |>
-    first #might work (still loading)
+    seed(BalancedAcceptance(; numpoints = 500)) |> 
+    refine(AdaptiveSpatial(; numpoints=400)) |>
+    first 
 
-
-    
 fig = Makie.Figure()
 CairoMakie.heatmap(data_matrix)
 CairoMakie.scatter!(getindex.(locations, 1), getindex.(locations, 2), color=:orange)
@@ -65,6 +63,7 @@ density(filter(!isnan, vec(data_matrix)))
 [data_matrix[location] for location in locations] |> density!
 current_figure()
 
-[(location[1], location[2], data_matrix[location]) for location in locations]
-
+using DelimitedFiles
+coord400 = [(location[1], location[2], data_matrix[location]) for location in locations]
+writedlm("coord400.txt", coord400)
 #exporter les données (coordonnées et prévalence pour le krigger)
