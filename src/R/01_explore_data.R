@@ -51,7 +51,7 @@ coordinates(coord50_1) <- ~ X1 + X2
 class(coord50_1)
 
 #variogram
-lzn.vgm <- variogram(log(zinc)~1, meuse) # calculates sample variogram values 
+lzn.vgm <- variogram(log(X3)~1, coord50_1) # calculates sample variogram values 
 lzn.fit <- fit.variogram(lzn.vgm, model=vgm(1, "Sph", 900, 1)) # fit model
 
 # Krig 50 points ====
