@@ -46,34 +46,48 @@ coord500 <- readr::read_table(here::here(
 #coord25000 <- readr::read_table(here::here("./data/clean/coord25000.txt"), col_names = FALSE)
 
 #prep de data
-class(coord50_1)
 coordinates(coord50_1) <- ~ X1 + X2
-class(coord50_1)
 
 #variogram
-lzn.vgm <- variogram(log(X3)~1, coord50_1) # calculates sample variogram values 
-lzn.fit <- fit.variogram(lzn.vgm, model=vgm(1, "Sph", 900, 1)) # fit model
+lzn.vgm <- variogram(X3~1, data=coord50_1) 
+plot(lzn.vgm)
+
+#no line is showing up!
+lzn.model <- gstat::vgm( 
+  psill = 0.06, # semivariance at the range
+  range = 100, # distance of the plateau
+  nugget = 1, # intercept (sorta)
+  model = "Sph") # spherical model
+
+png(filename = here::here("./figs/varg-vgm-006-100-1-Sph.png")) 
+plot(lzn.vgm, lzn.model) 
+dev.off() 
+
+lzn.fit <- fit.variogram(lzn.vgm, lzn.model) 
+
+grid_sample <- sf::st_sample(
+  sf::st_as_sfc(berlin_sf),
+  size = 10000, type = "regular"
+)
+coords <- st_coordinates(grid_sample)
+berlin_grid <- as.data.frame(coords)
+
+coordinates(berlin_grid) <- ~ X + Y
+lzn.kriged <- krige(X3 ~ 1, coord50_1, grid_sample, model=lzn.fit)
+
+lzn.kriged %>% as.data.frame %>%
+  ggplot(aes(X1=X1, Y=Y)) + geom_tile(aes(fill=var1.pred)) + coord_equal() +
+  scale_fill_gradient(low = "yellow", high="red") +
+  scale_x_continuous(labels=comma) + scale_y_continuous(labels=comma) +
+  theme_bw()
+
+png(filename = here::here("./figs/coord50_1_kriged")) 
+plot(lzn.kriged) 
+dev.off() 
 
 # Krig 50 points ====
 # On veut savoir si la randomness a un effet sur la qualité de l'échantillonnage
 # Est-il similaire au krig original ? Plus ou moins précis ? Uniforme entre eux ?
-krig50 <- gstat::krige(
-  detection_outcome ~ 1,
-  locations = pharos_50,
-  newdata = grid_sample,
-  model = fit_varg50,
-  nmax = 5
-)
-plot(krig50["var1.pred"])
-
-krig_50pts <- ggplot2::ggplot() +
-  geom_sf(data = berlin_poly, alpha = 0.3) +
-  geom_sf(data = krig50, aes(fill = var1.pred), shape = 21, size = 3) +
-  geom_sf(data = pharos_50, aes(colour = detection_outcome), size = 2) + # foxes
-  scale_fill_viridis_c("probability", na.value = "white") +
-  scale_colour_manual("test outcome", values = c("#8a56b8", "#d5363d")) +
-  theme_void() +
-  coord_sf()
 
 ## map 1 ====
 plot(krig_50pts)

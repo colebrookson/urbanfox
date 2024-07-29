@@ -109,4 +109,3 @@ vgm50 <- gstat::vgm(
   model = "Exp" # spherical model
 )
 fit_varg50 <- gstat::fit.variogram(varg50, vgm50)
-
