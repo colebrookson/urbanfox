@@ -159,7 +159,7 @@ coords <- st_coordinates(grid_sample)
 berlin_grid <- as.data.frame(coords)
 coordinates(berlin_grid) <- ~ X + Y
 
-lzn.kriged <- krige(X3 ~ 1, coord50_1, grid_sample, model=lzn.fit)
+lzn.kriged <- krige(X3 ~ 1, coord50_1, berlin_grid, model=lzn.fit)
 
 lzn.kriged %>% as.data.frame %>%
   ggplot(aes(x=x, y=y)) + geom_tile(aes(fill=var1.pred)) + coord_equal() +
