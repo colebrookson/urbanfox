@@ -50,25 +50,74 @@ coord500 <- readr::read_table(here::here(
 # Est-il similaire au krig original ? Plus ou moins précis ? Uniforme entre eux ?
 
 ## map 1 ====
-plot(krig_50pts)
+lzn.kriged %>% as.data.frame %>%
+  ggplot(aes(x=X, y=Y)) + geom_tile(aes(fill=var1.pred)) + coord_equal() +
+  scale_fill_gradient(low = "yellow", high="red") +
+  scale_x_continuous(labels=comma) + scale_y_continuous(labels=comma) +
+  theme_bw()
+
 ## map 2 ====
-plot(krig_50pts)
+lzn.kriged2 %>% as.data.frame %>%
+  ggplot(aes(x=X, y=Y)) + geom_tile(aes(fill=var1.pred)) + coord_equal() +
+  scale_fill_gradient(low = "yellow", high="red") +
+  scale_x_continuous(labels=comma) + scale_y_continuous(labels=comma) +
+  theme_bw()
+
 ## map 3 ====
-plot(krig_50pts)
+lzn.kriged3 %>% as.data.frame %>%
+  ggplot(aes(x=X, y=Y)) + geom_tile(aes(fill=var1.pred)) + coord_equal() +
+  scale_fill_gradient(low = "yellow", high="red") +
+  scale_x_continuous(labels=comma) + scale_y_continuous(labels=comma) +
+  theme_bw()
+
 ## map 4 ====
-plot(krig_50pts)
+lzn.kriged4 %>% as.data.frame %>%
+  ggplot(aes(x=X, y=Y)) + geom_tile(aes(fill=var1.pred)) + coord_equal() +
+  scale_fill_gradient(low = "yellow", high="red") +
+  scale_x_continuous(labels=comma) + scale_y_continuous(labels=comma) +
+  theme_bw()
+
 ## map 5 ====
-plot(krig_50pts)
+lzn.kriged5 %>% as.data.frame %>%
+  ggplot(aes(x=X, y=Y)) + geom_tile(aes(fill=var1.pred)) + coord_equal() +
+  scale_fill_gradient(low = "yellow", high="red") +
+  scale_x_continuous(labels=comma) + scale_y_continuous(labels=comma) +
+  theme_bw()
+
 ## map 6 ====
-plot(krig_50pts)
+lzn.kriged6 %>% as.data.frame %>%
+  ggplot(aes(x=X, y=Y)) + geom_tile(aes(fill=var1.pred)) + coord_equal() +
+  scale_fill_gradient(low = "yellow", high="red") +
+  scale_x_continuous(labels=comma) + scale_y_continuous(labels=comma) +
+  theme_bw()
+
 ## map 7 ====
-plot(krig_50pts)
+lzn.kriged7 %>% as.data.frame %>%
+  ggplot(aes(x=X, y=Y)) + geom_tile(aes(fill=var1.pred)) + coord_equal() +
+  scale_fill_gradient(low = "yellow", high="red") +
+  scale_x_continuous(labels=comma) + scale_y_continuous(labels=comma) +
+  theme_bw()
+
 ## map 8 ====
-plot(krig_50pts)
+lzn.kriged8 %>% as.data.frame %>%
+  ggplot(aes(x=X, y=Y)) + geom_tile(aes(fill=var1.pred)) + coord_equal() +
+  scale_fill_gradient(low = "yellow", high="red") +
+  scale_x_continuous(labels=comma) + scale_y_continuous(labels=comma) +
+  theme_bw()
+
 ## map 9 ====
-plot(krig_50pts)
+lzn.kriged9 %>% as.data.frame %>%
+  ggplot(aes(x=X, y=Y)) + geom_tile(aes(fill=var1.pred)) + coord_equal() +
+  scale_fill_gradient(low = "yellow", high="red") +
+  scale_x_continuous(labels=comma) + scale_y_continuous(labels=comma) +
+  theme_bw()
+
 ## map 10 ====
-plot(krig_50pts)
+lzn.kriged50_10 %>% as.data.frame %>%
+  ggplot(aes(x=X, y=Y)) + geom_tile(aes(fill=var1.pred)) + coord_equal() +
+  scale_fill_gradient(low = "yellow", high="red") +
+  scale_x_continuous(labels=comma) + scale_y_continuous(labels=comma) +
+  theme_bw()
 
 # Krig 10 points ====
 # On veut savoir si le nombre de points (sous-échantillon) a un effet sur la 
@@ -76,27 +125,47 @@ plot(krig_50pts)
 # ou un nombre de ptns ou il n'y a pas de différéence significative ?
 
 ## map 11 ====
-plot(krig_10pts)
+lzn.kriged10 %>% as.data.frame %>%
+  ggplot(aes(x=X, y=Y)) + geom_tile(aes(fill=var1.pred)) + coord_equal() +
+  scale_fill_gradient(low = "yellow", high="red") +
+  scale_x_continuous(labels=comma) + scale_y_continuous(labels=comma) +
+  theme_bw()
 
 # Krig 100 points ====
 
 ## map 12 ====
-plot(krig_100pts)
+lzn.kriged100 %>% as.data.frame %>%
+  ggplot(aes(x=X, y=Y)) + geom_tile(aes(fill=var1.pred)) + coord_equal() +
+  scale_fill_gradient(low = "yellow", high="red") +
+  scale_x_continuous(labels=comma) + scale_y_continuous(labels=comma) +
+  theme_bw()
 
 # Krig 200 points ====
 
 ## map 13 ====
-plot(krig_100pts)
+lzn.kriged200 %>% as.data.frame %>%
+  ggplot(aes(x=X, y=Y)) + geom_tile(aes(fill=var1.pred)) + coord_equal() +
+  scale_fill_gradient(low = "yellow", high="red") +
+  scale_x_continuous(labels=comma) + scale_y_continuous(labels=comma) +
+  theme_bw()
 
 # Krig 300 points ====
 
 ## map 14 ====
-plot(krig_500pts)
+lzn.kriged300 %>% as.data.frame %>%
+  ggplot(aes(x=X, y=Y)) + geom_tile(aes(fill=var1.pred)) + coord_equal() +
+  scale_fill_gradient(low = "yellow", high="red") +
+  scale_x_continuous(labels=comma) + scale_y_continuous(labels=comma) +
+  theme_bw()
 
 # Krig 500 points ====
 
 ## map 15 ====
-plot(krig_500pts)
+lzn.kriged500 %>% as.data.frame %>%
+  ggplot(aes(x=X, y=Y)) + geom_tile(aes(fill=var1.pred)) + coord_equal() +
+  scale_fill_gradient(low = "yellow", high="red") +
+  scale_x_continuous(labels=comma) + scale_y_continuous(labels=comma) +
+  theme_bw()
 
 # Krig 1000 points ====
 
