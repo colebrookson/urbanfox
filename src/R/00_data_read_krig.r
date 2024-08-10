@@ -204,6 +204,8 @@ ggplot2::ggsave(
 
 plot(krig_and_foxes)
 
+class(pharos_sf)
+
 ## save as raster ====
 
 # we need to make a raster "template" of the area we're using
