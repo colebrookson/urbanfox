@@ -15,8 +15,6 @@ germany_sf <- sf::st_read(here::here("./data/raw/geo-data/")) %>%
 germany_code_matches <- readr::read_csv(here::here(
   "./data/raw/zuordnung_plz_ort.csv"
 ))
-coord50_1 <- readr::read_table(here::here(
-  "./data/clean/coord50_1.txt"), col_names = FALSE)
 
 names(germany_sf)
 germany_sf <- germany_sf %>% dplyr::rename(
@@ -43,18 +41,20 @@ suppressPackageStartupMessages({
   library(scales) # for "comma"
   library(magrittr)
 })
+coord50_4 <- readr::read_table(here::here(
+  "./data/clean/coords100.txt"), col_names = FALSE)
 
 #prep de data
-coordinates(coord500) <- ~ X1 + X2
+coordinates(coord50_4) <- ~ X1 + X2
 
 #variogram
-lzn.vgm <- variogram(X3~1, data=coord500) 
+lzn.vgm <- variogram(X3~1, data=coord50_4) 
 plot(lzn.vgm)
 
 lzn.model <- gstat::vgm( 
-  psill = 0.060, # semivariance at the range
-  range = 100, # distance of the plateau
-  nugget = 0.005, # intercept (sorta)
+  psill = 0.07, # semivariance at the range
+  range = 0.05, # distance of the plateau
+  nugget = 0, # intercept (sorta)
   model = "Exp") # spherical model
 plot(lzn.vgm, lzn.model)
 
@@ -64,21 +64,20 @@ plot(lzn.vgm, lzn.model)
 
 lzn.fit <- fit.variogram(lzn.vgm, lzn.model) 
 
-#grid_sample <- sf::st_sample(
- # sf::st_as_sfc(berlin_sf),
-  #size = 10000, type = "regular"
-#)
-#coords <- st_coordinates(grid_sample)
-#berlin_grid <- as.data.frame(coords)
-#coordinates(berlin_grid) <- ~ X + Y
+grid_sample <- sf::st_sample(
+ sf::st_as_sfc(berlin_sf),
+  size = 10000, type = "regular")
+coords <- st_coordinates(grid_sample)
+berlin_grid <- as.data.frame(coords)
+coordinates(berlin_grid) <- ~ X + Y
 
-lzn.kriged500 <- krige(X3 ~ 1, coord500, berlin_grid, model=lzn.fit)
+lzn.kriged <- krige(X3 ~ 1, coord50_4, berlin_grid, model=lzn.fit)
 
-#lzn.kriged %>% as.data.frame %>%
- # ggplot(aes(x=X, y=Y)) + geom_tile(aes(fill=var1.pred)) + coord_equal() +
-  #scale_fill_gradient(low = "yellow", high="red") +
-  #scale_x_continuous(labels=comma) + scale_y_continuous(labels=comma) +
-  #theme_bw()
+lzn.kriged %>% as.data.frame %>%
+ ggplot(aes(x=X, y=Y)) + geom_tile(aes(fill=var1.pred)) + coord_equal() +
+ scale_fill_gradient(low = "yellow", high="red") +
+ scale_x_continuous(labels=comma) + scale_y_continuous(labels=comma) +
+ theme_bw()
 
 # NOTE : the saved png isn't looking good, I prefer to export it manually
 #png(filename = here::here("./figs/coord50_1_kriged.png")) 

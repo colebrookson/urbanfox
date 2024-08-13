@@ -80,9 +80,42 @@ unique_indices <- which(!duplicated(duplicates))
 pharos_sf <- pharos_sf[unique_indices, ]
 
 # Sampling
-rand <- pharos_sf[sample(nrow(pharos_sf), size=100), ]
-class(rand)
+rand50_1 <- pharos_sf[sample(nrow(pharos_sf), size=50), ]
+readr::write_delim(rand50_1, 
+                 file=here::here("./data/clean/rand50_1.txt"),
+                 col_names = FALSE)
+rand50_2 <- pharos_sf[sample(nrow(pharos_sf), size=50), ]
+readr::write_delim(rand50_2, 
+                   file=here::here("./data/clean/rand50_2.txt"),
+                   col_names = FALSE)
+rand50_3 <- pharos_sf[sample(nrow(pharos_sf), size=50), ]
+readr::write_delim(rand50_3, 
+                   file=here::here("./data/clean/rand50_3.txt"),
+                   col_names = FALSE)
+rand50_4 <- pharos_sf[sample(nrow(pharos_sf), size=50), ]
+readr::write_delim(rand50_4, 
+                   file=here::here("./data/clean/rand50_4.txt"),
+                   col_names = FALSE)
+rand50_5 <- pharos_sf[sample(nrow(pharos_sf), size=50), ]
+readr::write_delim(rand50_5, 
+                   file=here::here("./data/clean/rand50_5.txt"),
+                   col_names = FALSE)
+rand100 <- pharos_sf[sample(nrow(pharos_sf), size=100), ]
+readr::write_delim(rand100, 
+                   file=here::here("./data/clean/rand100.txt"),
+                   col_names = FALSE)
+rand200 <- pharos_sf[sample(nrow(pharos_sf), size=200), ]
+readr::write_delim(rand200, 
+                   file=here::here("./data/clean/rand200.txt"),
+                   col_names = FALSE)
+rand300 <- pharos_sf[sample(nrow(pharos_sf), size=300), ]
+readr::write_delim(rand300, 
+                   file=here::here("./data/clean/rand300.txt"),
+                   col_names = FALSE)
+rand500 <- pharos_sf[sample(nrow(pharos_sf), size=500), ]
+readr::write_delim(rand500, 
+                   file=here::here("./data/clean/rand500.txt"),
+                   col_names = FALSE)
 
-#readr::write_delim(rand50_1, 
-#                 file=here::here("./data/clean/rand50_1.txt"),
-#                 col_names = FALSE)
+
+
